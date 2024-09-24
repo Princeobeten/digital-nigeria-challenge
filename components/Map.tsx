@@ -132,10 +132,14 @@ const Map: React.FC = () => {
   zoom={8} 
   style={mapStyles} 
   ref={mapRef}
-  whenReady={(map) => {
-    map.target.fitBounds([[5.4, 8.2], [6.8, 9.3]]);
+  whenReady={() => {
+    if (mapRef.current) {
+      const map = mapRef.current;
+      map.fitBounds([[5.4, 8.2], [6.8, 9.3]]);
+    }
   }}
 >
+
   <TileLayer
     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
