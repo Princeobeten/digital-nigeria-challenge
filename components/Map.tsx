@@ -1,11 +1,10 @@
 'use client';
-
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, LayerGroup, LayersControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { FaHospital, FaSchool, FaWater, FaChartBar, FaChartPie, FaExpand, FaCompress, FaLayerGroup } from 'react-icons/fa';
+import { FaHospital, FaSchool, FaWater, FaChartBar, FaChartPie, FaExpand, FaCompress, FaStreetView, FaSatelliteDish } from 'react-icons/fa';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { divIcon, Map as LeafletMap } from 'leaflet';
+import { divIcon, Map as LeafletMap, CircleMarker as LeafletCircleMarker } from 'leaflet';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 
@@ -14,7 +13,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 interface InfrastructureData {
   id: number;
   name: string;
-  type: 'hospital' | 'school' | 'utility';
+  type: 'hospital' | 'school';
   latitude: number;
   longitude: number;
   data: {
@@ -33,7 +32,7 @@ const infrastructureData: InfrastructureData[] = [
   { id: 6, name: "UNICAL International Demonstration Secondary School", type: "school", latitude: 4.95644104031808, longitude: 8.34622340221119, data: { capacity: "unknown", yearBuilt: 1995, condition: 'Good' } },
   { id: 7, name: "Holy Child Secondary School", type: "school", latitude: 4.959348364996844, longitude: 8.329057265637312, data: { capacity: "unknown", yearBuilt: 1953, condition: 'Good' } },
   { id: 8, name: "Aunty Margaret International School", type: "school", latitude: 4.9730297209096905, longitude: 8.338326979387206, data: { capacity: "unknown", yearBuilt: 1972, condition: 'Good' } },
-  { id: 9, name: "University of Cross River", type: "school", latitude: 4.9292303588989625, longitude: 8.329933524016974, data: { capacity: "unknown", yearBuilt: 2002, condition: 'Good' } },
+  { id: 9, name: "University of Cross River", type: "school", latitude: 4.9292303588989625, longitude: 8.329933524016974, data: { capacity: "unknown", yearBuilt: 2002, condition: 'Fair' } },
   { id: 10, name: "University of Calabar", type: "school", latitude: 4.952776839979816, longitude: 8.33992759941126, data: { capacity: "unknown", yearBuilt: 1975, condition: 'Good' } },
 ];
 
@@ -54,36 +53,33 @@ const Map: React.FC = () => {
     boxShadow: isFullScreen ? "none" : "0 4px 6px rgba(0, 0, 0, 0.1)",
   };
 
-  const getIcon = (type: string) => {
+  const getIcon = (type: string, color: string) => {
     let icon;
     switch (type) {
       case 'hospital':
-        icon = <FaHospital className="text-blue-500 shadow-md rounded-full text-4xl bg-white p-2" />;
+        icon = <FaHospital className={`shadow-md rounded-full text-4xl text-slate-900 p-2 bg-white text-${color}`} />;
         break;
       case 'school':
-        icon = <FaSchool  className="text-blue-500 shadow-md rounded-full text-4xl bg-white p-2"/>;
-        break;
-      case 'utility':
-        icon = <FaWater  className="text-blue-500 shadow-md rounded-full text-4xl bg-white p-2"/>;
+        icon = <FaSchool className={`shadow-md rounded-full text-4xl text-slate-900 p-2 bg-white text-${color}`} />;
         break;
       default:
-        icon = <FaHospital  className="text-blue-500 shadow-md rounded-full text-4xl bg-white p-2"/>;
+        icon = <FaHospital className={`shadow-md rounded-full text-4xl text-slate-900 p-2 bg-white text-${color}`} />;
     }
     return renderToStaticMarkup(icon);
   };
 
   const customMarkerIcon = (type: string) => divIcon({
-    html: getIcon(type),
+    html: getIcon(type, type === 'hospital' ? '#3498db' : type === 'school' ? '#1abc9c' : '#2ecc71'),
     iconSize: [25, 41],
-    iconAnchor: [12, 41],
+    iconAnchor: [18, 18],
     popupAnchor: [1, -34],
-    className: `custom-marker-icon ${type}`
+    className: `custom-marker-icon ${type}`,
   });
 
   useEffect(() => {
     if (mapRef.current) {
       const map = mapRef.current;
-      map.fitBounds([[5.4, 8.2], [6.8, 9.3]]);
+      map.fitBounds([[4.9292303588989625, 8.329057265637312], [5.002602244866328, 8.34976117622124]]);
     }
   }, []);
 
@@ -102,15 +98,14 @@ const Map: React.FC = () => {
   };
 
   const barData = {
-    labels: ['Hospitals', 'Schools', 'Utilities'],
+    labels: ['Hospitals', 'Schools'],
     datasets: [{
       label: 'Number of Infrastructure',
       data: [
         filteredData.filter(item => item.type === 'hospital').length,
         filteredData.filter(item => item.type === 'school').length,
-        filteredData.filter(item => item.type === 'utility').length,
       ],
-      backgroundColor: ['#3498db', '#1abc9c', '#e74c3c'],
+      backgroundColor: ['#3498db', '#1abc9c'],
     }],
   };
 
@@ -149,8 +144,8 @@ const Map: React.FC = () => {
     <div className={`${isFullScreen ? 'fixed inset-0 z-50' : 'md:flex justify-between p-8 space-y-4 md:space-y-0 md:space-x-4'}`}>
       <div ref={mapContainerRef} className={`${isFullScreen ? 'w-full h-full' : 'flex-1 h-[50vh] md:h-[70vh]'} relative`}>
         <MapContainer 
-          center={[5.8702, 8.5988]} 
-          zoom={8} 
+          center={[4.9730297209096905, 8.338326979387206]} 
+          zoom={13} 
           style={mapStyles} 
           ref={mapRef}
         >
@@ -169,74 +164,95 @@ const Map: React.FC = () => {
             <LayersControl.Overlay checked name="Hospitals">
               <LayerGroup>
                 {filteredData.filter(item => item.type === 'hospital').map(item => (
-                  <Marker 
-                    key={item.id}
-                    position={[item.latitude, item.longitude]}
-                    icon={customMarkerIcon(item.type)}
-                    eventHandlers={{
-                      click: () => setSelected(item),
-                    }}
-                  >
-                    <Popup>
-                      <div className="text-sm space-y-2">
-                        <h2 className="text-lg font-bold">{item.name}</h2>
-                        <p><span className="font-semibold">Type:</span> Hospital</p>
-                        <p><span className="font-semibold">Capacity:</span> {item.data.capacity}</p>
-                        <p><span className="font-semibold">Year Built:</span> {item.data.yearBuilt}</p>
-                        <p><span className="font-semibold">Condition:</span> {item.data.condition}</p>
-                      </div>
-                    </Popup>
-                  </Marker>
+                  <React.Fragment key={item.id}>
+                    <Marker 
+                      position={[item.latitude, item.longitude]}
+                      icon={customMarkerIcon(item.type)}
+                      eventHandlers={{
+                        click: () => setSelected(item),
+                      }}
+                    >
+                      <Popup>
+                        <div className="text-sm space-y-2">
+                          <h2 className="text-lg font-bold">{item.name}</h2>
+                          <p><span className="font-semibold">Type:</span> Hospital</p>
+                          <p><span className="font-semibold">Capacity:</span> {item.data.capacity}</p>
+                          <p><span className="font-semibold">Year Built:</span> {item.data.yearBuilt}</p>
+                          <p><span className="font-semibold">Condition:</span> {item.data.condition}</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                    <CircleMarker
+                      center={[item.latitude, item.longitude]}
+                      radius={40}
+                      color={item.data.condition === 'Good' ? '#2ecc71' : item.data.condition === 'Fair' ? '#f1c40f' : '#e74c3c'}
+                      fillOpacity={0.3}
+                    />
+                  </React.Fragment>
                 ))}
               </LayerGroup>
             </LayersControl.Overlay>
             <LayersControl.Overlay checked name="Schools">
               <LayerGroup>
                 {filteredData.filter(item => item.type === 'school').map(item => (
-                  <Marker 
-                    key={item.id}
-                    position={[item.latitude, item.longitude]}
-                    icon={customMarkerIcon(item.type)}
-                    eventHandlers={{
-                      click: () => setSelected(item),
-                    }}
-                  >
-                    <Popup>
-                      <div className="text-sm space-y-2">
-                        <h2 className="text-lg font-bold">{item.name}</h2>
-                        <p><span className="font-semibold">Type:</span> School</p>
-                        <p><span className="font-semibold">Capacity:</span> {item.data.capacity}</p>
-                        <p><span className="font-semibold">Year Built:</span> {item.data.yearBuilt}</p>
-                        <p><span className="font-semibold">Condition:</span> {item.data.condition}</p>
-                      </div>
-                    </Popup>
-                  </Marker>
+                  <React.Fragment key={item.id}>
+                    <Marker 
+                      position={[item.latitude, item.longitude]}
+                      icon={customMarkerIcon(item.type)}
+                      eventHandlers={{
+                        click: () => setSelected(item),
+                      }}
+                    >
+                      <Popup>
+                        <div className="text-sm space-y-2">
+                          <h2 className="text-lg font-bold">{item.name}</h2>
+                          <p><span className="font-semibold">Type:</span> School</p>
+                          <p><span className="font-semibold">Capacity:</span> {item.data.capacity}</p>
+                          <p><span className="font-semibold">Year Built:</span> {item.data.yearBuilt}</p>
+                          <p><span className="font-semibold">Condition:</span> {item.data.condition}</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                    <CircleMarker
+                      center={[item.latitude, item.longitude]}
+                      radius={40}
+                      color={item.data.condition === 'Good' ? '#2ecc71' : item.data.condition === 'Fair' ? '#f1c40f' : '#e74c3c'}
+                      fillOpacity={0.3}
+                    />
+                  </React.Fragment>
                 ))}
               </LayerGroup>
             </LayersControl.Overlay>
-            <LayersControl.Overlay checked name="Utilities">
+            {/* <LayersControl.Overlay checked name="Utilities">
               <LayerGroup>
                 {filteredData.filter(item => item.type === 'utility').map(item => (
-                  <Marker 
-                    key={item.id}
-                    position={[item.latitude, item.longitude]}
-                    icon={customMarkerIcon(item.type)}
-                    eventHandlers={{
-                      click: () => setSelected(item),
-                    }}
-                  >
-                    <Popup>
-                      <div className="text-sm space-y-2">
-                        <h2 className="text-lg font-bold">{item.name}</h2>
-                        <p><span className="font-semibold">Type:</span> Utility</p>
-                        <p><span className="font-semibold">Year Built:</span> {item.data.yearBuilt}</p>
-                        <p><span className="font-semibold">Condition:</span> {item.data.condition}</p>
-                      </div>
-                    </Popup>
-                  </Marker>
+                  <React.Fragment key={item.id}>
+                    <Marker 
+                      position={[item.latitude, item.longitude]}
+                      icon={customMarkerIcon(item.type)}
+                      eventHandlers={{
+                        click: () => setSelected(item),
+                      }}
+                    >
+                      <Popup>
+                        <div className="text-sm space-y-2">
+                          <h2 className="text-lg font-bold">{item.name}</h2>
+                          <p><span className="font-semibold">Type:</span> Utility</p>
+                          <p><span className="font-semibold">Year Built:</span> {item.data.yearBuilt}</p>
+                          <p><span className="font-semibold">Condition:</span> {item.data.condition}</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                    <CircleMarker
+                      center={[item.latitude, item.longitude]}
+                      radius={20}
+                      color={item.data.condition === 'Good' ? '#2ecc71' : item.data.condition === 'Fair' ? '#f1c40f' : '#e74c3c'}
+                      fillOpacity={0.3}
+                    />
+                  </React.Fragment>
                 ))}
               </LayerGroup>
-            </LayersControl.Overlay>
+            </LayersControl.Overlay> */}
           </LayersControl>
         </MapContainer>
         <button 
@@ -246,12 +262,17 @@ const Map: React.FC = () => {
           {isFullScreen ? <FaCompress /> : <FaExpand />}
         </button>
         <button 
-          className="absolute bottom-4 left-4 bg-white p-2 rounded-md shadow-md z-[1000]"
+          className="absolute text-xl bottom-4 left-4 bg-white p-2 rounded-md shadow-md z-[1000]"
           onClick={toggleMapLayer}
         >
-          <FaLayerGroup className="text-blue-500" />
-          <span className="ml-2 text-sm">{mapLayer === 'street' ? 'Satellite' : 'Street'}</span>
+          {mapLayer === 'street' ? <FaStreetView /> : <FaSatelliteDish />}
         </button>
+        <div className="absolute top-3 left-12 text-center bg-white px-4 py-2 rounded-md shadow-md z-[1000] flex items-center space-x-2">
+          <div className="text-blue-500 font-bold">
+            {filteredData.length}
+          </div>
+          <span className="text-sm">Locations</span>
+        </div>
       </div>
 
       {!isFullScreen && (
