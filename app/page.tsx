@@ -1,4 +1,3 @@
-// import Map from "@/components/Map";
 import dynamic from 'next/dynamic';
 
 const Map = dynamic(() => import('../components/Map'), { ssr: false });
@@ -23,15 +22,16 @@ export default function Home() {
           </div>
 
           <section className="mt-12 bg-white rounded-lg shadow-xl p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Project</h2>
-            <p className="text-gray-700 mb-4">
-              This interactive map visualizes key healthcare metrics for Cross River State, focusing on maternal and infant health. By presenting this data in an accessible format, we aim to highlight areas for improvement and guide resource allocation.
-            </p>
-            <ul className="list-disc list-inside text-gray-700">
-              <li>Skilled birth attendance rates</li>
-              <li>Percentage of adequately fed infants</li>
-              <li>Prevalence of low birth weight</li>
-            </ul>
+          <div className="mt-4 p-4 bg-white shadow-lg rounded-lg">
+          <h3 className="font-semibold text-xl mb-2">Infrastructure Overview</h3>
+          <p className="text-sm text-gray-600 mb-2">
+            This map showcases the key infrastructure in Cross River State, including hospitals, schools, and utilities. 
+            The data highlights areas of development and potential needs for improvement.
+          </p>
+          <p className="text-sm text-gray-600">
+            Use the layer controls to filter infrastructure types and click on markers for detailed information.
+          </p>
+        </div>
           </section>
         </main>
 
